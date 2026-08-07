@@ -22,7 +22,8 @@ main()
     .catch((err) => console.log(err));
 
 async function main(){
-    await mongoose.connect("mongodb://127.0.0.1:27017/test")
+    const dbUrl = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/test";
+    await mongoose.connect(dbUrl);
 }
 
 app.use(express.urlencoded({extended:true})); 
@@ -87,7 +88,7 @@ app.post('/prompts/:id/test', async (req, res) => {
         const responseTimeMs = Date.now() - startTime;
 
         prompt.logs.push({
-            inputText,
+            inputText, 
             aiOutput: realAiOutput,
             responseTimeMs
         });
