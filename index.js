@@ -4,15 +4,17 @@ const mongoose = require('mongoose');
 const path = require("path");
 const methodOverride = require("method-override");
 const session = require('express-session');
+const MongoStore = require('connect-mongo');
 const Groq = require('groq-sdk');
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 const port = process.env.PORT || 8080;
+const dbUrl = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/test";
+
 const app = express();
 
 // --- Database Connection ---
 async function main() {
-    const dbUrl = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/test";
     await mongoose.connect(dbUrl);
     console.log("Database connection successful");
 }
@@ -47,13 +49,21 @@ app.use(methodOverride("_method"));
 app.set("view engine", "ejs"); 
 app.set("views", path.join(__dirname, "views"));
 app.use(express.static(path.join(__dirname, "public")));
-app.set('trust proxy', 1);
 
-// Express Session Configuration
+// --- Express Session Configuration with MongoDB Store ---
 app.use(session({
     secret: process.env.SESSION_SECRET || 'secretkey',
     resave: false,
-    saveUninitialized: false
+    saveUninitialized: false,
+    store: MongoStore.create({
+        mongoUrl: dbUrl,
+        collectionName: 'sessions'
+    }),
+    cookie: {
+        secure: false, // Keep false for standard HTTP/localhost. Set to true if running on live HTTPS.
+        httpOnly: true,
+        maxAge: 1000 * 60 * 60 * 24 // Session active for 1 day
+    }
 }));
 
 // --- Routes ---
@@ -106,18 +116,25 @@ app.post("/signup", async (req, res) => {
                 return res.status(500).send("Signup failed.");
             }
             res.redirect("/prompts");
-        })
+        });
     } catch (err) {
         console.error(err);
         res.status(500).send("Error creating user");
     }
 });
 
+app.get("/logout", (req, res) => {
+    req.session.destroy((err) => {
+        if (err) console.error("Logout error:", err);
+        res.redirect("/login");
+    });
+});
+
 // Protected Prompts Routes
 app.get('/prompts', async (req, res) => {
     try {
         if (!req.session.userId) {
-            return res.status(401).send("Please log in first!");
+            return res.redirect('/login');
         }
 
         const prompts = await Prompt.find({ userId: req.session.userId }); 
