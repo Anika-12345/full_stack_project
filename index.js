@@ -58,10 +58,21 @@ app.get("/", (req, res) => {
     res.redirect("/prompts");
     // Or if you render a view: res.render("index");
 });
-app.get('/prompts', async (req, res)=>{
-    const prompts = await Prompt.find({ userId: req.user._id });; 
-    res.render('index.ejs', {prompts});
-})
+app.get('/prompts', async (req, res) => {
+    try {
+        // Check if req.user exists first
+        if (!req.user) {
+            // Redirect to login page or handle unauthenticated user
+            return res.status(401).send("Please log in first!");
+        }
+
+        const prompts = await Prompt.find({ userId: req.user._id }); 
+        res.render('index.ejs', { prompts });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Server Error");
+    }
+});
 app.get('/prompts/new', (req, res) => {
     res.render('new.ejs');
 });
