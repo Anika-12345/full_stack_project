@@ -52,6 +52,10 @@ const Prompt= mongoose.model("Prompt", promptSchema);
 
 
 //routes
+app.get("/", (req, res) => {
+    res.send("Welcome to PromptHub!"); 
+    // Or if you render a view: res.render("index");
+});
 app.get('/prompts', async (req, res)=>{
     const prompts = await Prompt.find({}); 
     res.render('index.ejs', {prompts});
@@ -102,6 +106,8 @@ app.post('/prompts/:id/test', async (req, res) => {
     }
 });
 
+const port = process.env.PORT || 8080;
+
 app.listen(port, () => {
-    console.log(`PromptHub running on http://localhost:${port}`);
+    console.log(`PromptHub running on port ${port}`);
 });
