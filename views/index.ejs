@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PromptHub - All Prompts</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <h1>PromptHub Dashboard</h1>
+    <a href="/prompts/new">Create New Prompt</a>
+    <hr>
+
+    <h2>Saved Prompts</h2>
+    <% if (prompts.length === 0) { %>
+        <p>No prompts found. <a href="/prompts/new">Add one now!</a></p>
+    <% } else { %>
+        <ul>
+            <% prompts.forEach(prompt => { %>
+                <li>
+                    <strong><%= prompt.title %></strong> (v<%= prompt.version %>)
+                    <br>
+                    <a href="/prompts/<%= prompt._id %>">View & Test</a>
+                </li>
+                <br>
+            <% }) %>
+        </ul>
+    <% } %>
+</body>
+</html>

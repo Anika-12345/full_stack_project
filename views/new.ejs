@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create New Prompt</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <h1>New Prompt Template</h1>
+    <form action="/prompts" method="POST">
+        <div>
+            <label for="title">Title:</label><br>
+            <input type="text" id="title" name="title" required placeholder="e.g., Code Review Assistant">
+        </div>
+        <br>
+        <div>
+            <label for="version">Version:</label><br>
+            <input type="text" id="version" name="version" required placeholder="e.g., 1.0.0">
+        </div>
+        <br>
+        <div>
+            <label for="category">Category:</label><br>
+            <input type="text" id="category" name="category" placeholder="e.g., Development">
+        </div>
+        <br>
+        <div>
+            <label for="templateText">Template Text:</label><br>
+            <textarea id="templateText" name="templateText" rows="5" cols="50" required placeholder="Enter prompt instructions here..."></textarea>
+        </div>
+        <br>
+        <button type="submit">Save Prompt</button>
+    </form>
+    <br>
+    <a href="/prompts">Back to Dashboard</a>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= prompt.title %> Details</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <a href="/prompts">← Back to Dashboard</a>
+    <h1><%= prompt.title %></h1>
+    <p><strong>Version:</strong> <%= prompt.version %></p>
+    
+    <div>
+        <h3>Template Instructions:</h3>
+        <pre><%= prompt.templateText %></pre>
+    </div>
+
+    <hr>
+
+    <h2>Test Prompt</h2>
+    <form action="/prompts/<%= prompt._id %>/test" method="POST">
+        <label for="inputText">Input Text:</label><br>
+        <textarea id="inputText" name="inputText" rows="4" cols="50" required placeholder="Enter test input..."></textarea>
+        <br><br>
+        <button type="submit">Run Test</button>
+    </form>
+
+    <hr>
+
+    <h2>Execution Logs (<%= prompt.logs.length %>)</h2>
+    <% if (prompt.logs.length === 0) { %>
+        <p>No tests have been run for this prompt yet.</p>
+    <% } else { %>
+        <% prompt.logs.reverse().forEach((log, index) => { %>
+            <div style="border: 1px solid #ccc; padding: 10px; margin-bottom: 10px;">
+                <p><strong>Run Time:</strong> <%= new Date(log.createdAt).toLocaleString() %></p>
+                <p><strong>Latency:</strong> <%= log.responseTimeMs %> ms</p>
+                <p><strong>Input:</strong> <%= log.inputText %></p>
+                <p><strong>AI Output:</strong> <%= log.aiOutput %></p>
+            </div>
+        <% }) %>
+    <% } %>
+</body>
+</html>
