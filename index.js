@@ -5,11 +5,11 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 const express = require("express");
 const mongoose = require('mongoose');
 
-
+const port = process.env.PORT || 8080;
 
 
 const app= express();
-const port=8080;
+
 const path= require("path");
 const methodOverride= require("method-override");
 
@@ -106,7 +106,7 @@ app.post('/prompts/:id/test', async (req, res) => {
     }
 });
 
-const port = process.env.PORT || 8080;
+
 
 app.listen(port, () => {
     console.log(`PromptHub running on port ${port}`);
