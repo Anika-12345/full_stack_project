@@ -54,7 +54,7 @@ const Prompt= mongoose.model("Prompt", promptSchema);
 
 //routes
 app.get("/", (req, res) => {
-    res.send("Welcome to PromptHub!"); 
+    res.redirect("/prompts");
     // Or if you render a view: res.render("index");
 });
 app.get('/prompts', async (req, res)=>{
