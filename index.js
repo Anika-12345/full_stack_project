@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const path = require("path");
 const methodOverride = require("method-override");
 const session = require('express-session');
-const MongoStore = require('connect-mongo');
+const MongoStore = require('connect-mongo'); // FIXED: Removed (session) call
 const Groq = require('groq-sdk');
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
