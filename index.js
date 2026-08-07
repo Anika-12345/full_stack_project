@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const path = require("path");
 const methodOverride = require("method-override");
 const session = require('express-session');
-const MongoStore = require('connect-mongo'); // FIXED: Removed (session) call
+const connectMongo = require('connect-mongo');
 const Groq = require('groq-sdk');
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
@@ -23,7 +23,7 @@ main().catch((err) => console.log(err));
 // --- Schemas & Models ---
 const userSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
-    password: { type: String, required: true } // Note: Hash passwords with bcrypt in production!
+    password: { type: String, required: true }
 });
 const User = mongoose.model("User", userSchema);
 
@@ -50,19 +50,40 @@ app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 app.use(express.static(path.join(__dirname, "public")));
 
-// --- Express Session Configuration with MongoDB Store ---
+// --- Universal MongoStore Configuration (Supports v3, v4, v5+) ---
+let sessionStore;
+
+if (connectMongo.create) {
+    // connect-mongo v4+ standard syntax
+    sessionStore = connectMongo.create({
+        mongoUrl: dbUrl,
+        collectionName: 'sessions'
+    });
+} else if (typeof connectMongo === 'function') {
+    // connect-mongo legacy v3 syntax
+    const MongoStore = connectMongo(session);
+    sessionStore = new MongoStore({
+        mongoUrl: dbUrl,
+        collectionName: 'sessions'
+    });
+} else {
+    // ESM / CJS module fallback
+    const MongoStore = connectMongo.default || connectMongo;
+    sessionStore = MongoStore.create({
+        mongoUrl: dbUrl,
+        collectionName: 'sessions'
+    });
+}
+
 app.use(session({
     secret: process.env.SESSION_SECRET || 'secretkey',
     resave: false,
     saveUninitialized: false,
-    store: MongoStore.create({
-        mongoUrl: dbUrl,
-        collectionName: 'sessions'
-    }),
+    store: sessionStore,
     cookie: {
-        secure: false, // Keep false for standard HTTP/localhost. Set to true if running on live HTTPS.
+        secure: false,
         httpOnly: true,
-        maxAge: 1000 * 60 * 60 * 24 // Session active for 1 day
+        maxAge: 1000 * 60 * 60 * 24 // 1 day
     }
 }));
 
