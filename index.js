@@ -47,6 +47,7 @@ app.use(methodOverride("_method"));
 app.set("view engine", "ejs"); 
 app.set("views", path.join(__dirname, "views"));
 app.use(express.static(path.join(__dirname, "public")));
+app.set('trust proxy', 1);
 
 // Express Session Configuration
 app.use(session({
@@ -75,7 +76,13 @@ app.post("/login", async (req, res) => {
     }
 
     req.session.userId = user._id; 
-    res.redirect("/prompts");
+    req.session.save((err) => {
+        if (err) {
+            console.error("Session save error:", err);
+            return res.status(500).send("Login failed.");
+        }
+        res.redirect("/prompts");
+    });
 });
 
 app.get("/signup", (req, res) => {
@@ -93,7 +100,13 @@ app.post("/signup", async (req, res) => {
 
         const newUser = await User.create({ username, password });
         req.session.userId = newUser._id;
-        res.redirect("/prompts");
+        req.session.save((err) => {
+            if (err) {
+                console.error("Session save error:", err);
+                return res.status(500).send("Signup failed.");
+            }
+            res.redirect("/prompts");
+        })
     } catch (err) {
         console.error(err);
         res.status(500).send("Error creating user");
