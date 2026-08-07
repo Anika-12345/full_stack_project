@@ -46,7 +46,7 @@ const promptSchema = new mongoose.Schema({
     title: String, 
     templateText: String,
     version: String,
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     logs: [LogSchema]
 });
 
