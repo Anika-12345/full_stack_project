@@ -46,6 +46,7 @@ const promptSchema = new mongoose.Schema({
     title: String, 
     templateText: String,
     version: String,
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
     logs: [LogSchema]
 });
 
@@ -58,7 +59,7 @@ app.get("/", (req, res) => {
     // Or if you render a view: res.render("index");
 });
 app.get('/prompts', async (req, res)=>{
-    const prompts = await Prompt.find({}); 
+    const prompts = await Prompt.find({ userId: req.user._id });; 
     res.render('index.ejs', {prompts});
 })
 app.get('/prompts/new', (req, res) => {
