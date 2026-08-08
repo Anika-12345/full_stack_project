@@ -56,19 +56,13 @@ app.use(express.static(path.join(__dirname, "public")));
 let sessionStore;
 
 if (connectMongo && typeof connectMongo.create === 'function') {
-    // connect-mongo v4+ syntax
+    // connect-mongo v4+ (Pass mongoUrl directly so it manages its own connection safely)
     sessionStore = connectMongo.create({
-        clientPromise: mongoose.connection.asPromise().then(m => m.connection.getClient()),
-        collectionName: 'sessions'
-    });
-} else if (connectMongo && connectMongo.default && typeof connectMongo.default.create === 'function') {
-    // ES module / fallback v4+ syntax
-    sessionStore = connectMongo.default.create({
-        clientPromise: mongoose.connection.asPromise().then(m => m.connection.getClient()),
+        mongoUrl: dbUrl,
         collectionName: 'sessions'
     });
 } else {
-    // connect-mongo v3.x legacy syntax
+    // connect-mongo v3.x legacy
     const MongoStore = connectMongo(session);
     sessionStore = new MongoStore({
         mongooseConnection: mongoose.connection,
