@@ -123,14 +123,18 @@ app.get("/signup", (req, res) => {
 
 app.post("/signup", async (req, res) => {
     try {
+        console.log("--> Signup request received! Body:", req.body);
         const { username, password } = req.body;
         
         const existingUser = await User.findOne({ username });
         if (existingUser) {
+            console.log("--> User already exists!");
             return res.status(400).send("Username already taken");
         }
 
         const newUser = await User.create({ username, password });
+        console.log("--> SUCCESS! Saved to DB:", newUser);
+
         req.session.userId = newUser._id;
         req.session.save((err) => {
             if (err) {
@@ -140,11 +144,10 @@ app.post("/signup", async (req, res) => {
             res.redirect("/prompts");
         });
     } catch (err) {
-        console.error(err);
+        console.error("--> Signup Error:", err);
         res.status(500).send("Error creating user");
     }
 });
-
 app.get("/logout", (req, res) => {
     req.session.destroy((err) => {
         if (err) console.error("Logout error:", err);
