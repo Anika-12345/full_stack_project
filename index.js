@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const path = require("path");
 const methodOverride = require("method-override");
 const session = require('express-session');
-const MongoStore = require('connect-mongo');
+const connectMongo = require('connect-mongo');
 const Groq = require('groq-sdk');
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
@@ -52,11 +52,29 @@ app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 app.use(express.static(path.join(__dirname, "public")));
 
-// --- MongoStore Configuration (Reuses Mongoose Connection) ---
-const sessionStore = MongoStore.create({
-    clientPromise: mongoose.connection.asPromise().then(m => m.connection.getClient()),
-    collectionName: 'sessions'
-});
+// --- Universal MongoStore Configuration (Supports v3, v4, v5+) ---
+let sessionStore;
+
+if (connectMongo && typeof connectMongo.create === 'function') {
+    // connect-mongo v4+ syntax
+    sessionStore = connectMongo.create({
+        clientPromise: mongoose.connection.asPromise().then(m => m.connection.getClient()),
+        collectionName: 'sessions'
+    });
+} else if (connectMongo && connectMongo.default && typeof connectMongo.default.create === 'function') {
+    // ES module / fallback v4+ syntax
+    sessionStore = connectMongo.default.create({
+        clientPromise: mongoose.connection.asPromise().then(m => m.connection.getClient()),
+        collectionName: 'sessions'
+    });
+} else {
+    // connect-mongo v3.x legacy syntax
+    const MongoStore = connectMongo(session);
+    sessionStore = new MongoStore({
+        mongooseConnection: mongoose.connection,
+        collectionName: 'sessions'
+    });
+}
 
 app.use(session({
     secret: process.env.SESSION_SECRET || 'secretkey',
