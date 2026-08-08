@@ -55,17 +55,24 @@ app.use(express.static(path.join(__dirname, "public")));
 // --- Universal MongoStore Configuration (Supports v3, v4, v5+) ---
 let sessionStore;
 
-if (connectMongo && typeof connectMongo.create === 'function') {
-    // connect-mongo v4+ (Pass mongoUrl directly so it manages its own connection safely)
+if (connectMongo.create) {
+    // connect-mongo v4+ standard syntax
     sessionStore = connectMongo.create({
         mongoUrl: dbUrl,
         collectionName: 'sessions'
     });
-} else {
-    // connect-mongo v3.x legacy
+} else if (typeof connectMongo === 'function') {
+    // connect-mongo legacy v3 syntax
     const MongoStore = connectMongo(session);
     sessionStore = new MongoStore({
-        mongooseConnection: mongoose.connection,
+        mongoUrl: dbUrl,
+        collectionName: 'sessions'
+    });
+} else {
+    // ESM / CJS module fallback
+    const MongoStore = connectMongo.default || connectMongo;
+    sessionStore = MongoStore.create({
+        mongoUrl: dbUrl,
         collectionName: 'sessions'
     });
 }
