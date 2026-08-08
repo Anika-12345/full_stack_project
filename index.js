@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const path = require("path");
 const methodOverride = require("method-override");
 const session = require('express-session');
-const connectMongo = require('connect-mongo');
+const MongoStore = require('connect-mongo');
 const Groq = require('groq-sdk');
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
@@ -53,7 +53,7 @@ app.set("views", path.join(__dirname, "views"));
 app.use(express.static(path.join(__dirname, "public")));
 
 // --- MongoStore Configuration (Reuses Mongoose Connection) ---
-const sessionStore = connectMongo.create({
+const sessionStore = MongoStore.create({
     clientPromise: mongoose.connection.asPromise().then(m => m.connection.getClient()),
     collectionName: 'sessions'
 });
