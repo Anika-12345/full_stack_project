@@ -7,18 +7,19 @@ const session = require('express-session');
 const connectMongo = require('connect-mongo');
 const Groq = require('groq-sdk');
 
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+// --- Global Configurations ---
 const port = process.env.PORT || 8080;
-
 const dbUrl = process.env.ATLASDB_URL || "mongodb://127.0.0.1:27017/test";
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 const app = express();
 
-// --- Database Connection ---
+// --- Database Connection & App Startup ---
 async function main() {
     await mongoose.connect(dbUrl);
     console.log("Database connection successful ->", mongoose.connection.name);
 }
+
 main().catch((err) => console.log("DB Connection Error:", err));
 
 // --- Schemas & Models ---
@@ -51,7 +52,7 @@ app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 app.use(express.static(path.join(__dirname, "public")));
 
-// --- Universal MongoStore Configuration (Supports v3, v4, v5+) ---
+// --- Universal MongoStore Configuration ---
 let sessionStore;
 
 if (connectMongo.create) {
@@ -147,6 +148,7 @@ app.post("/signup", async (req, res) => {
         res.status(500).send("Error creating user");
     }
 });
+
 app.get("/logout", (req, res) => {
     req.session.destroy((err) => {
         if (err) console.error("Logout error:", err);
@@ -224,6 +226,7 @@ app.post('/prompts/:id/test', async (req, res) => {
     }
 });
 
+// --- Start Server ---
 app.listen(port, "0.0.0.0", () => {
     console.log(`PromptHub running on port ${port}`);
 });
