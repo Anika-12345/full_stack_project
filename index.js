@@ -10,8 +10,7 @@ const Groq = require('groq-sdk');
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 const port = process.env.PORT || 8080;
 
-// Default fallback points strictly to prompthub
-const dbUrl = "mongodb://127.0.0.1:27017/test";
+const dbUrl = process.env.ATLASDB_URL || "mongodb://127.0.0.1:27017/test";
 
 const app = express();
 
