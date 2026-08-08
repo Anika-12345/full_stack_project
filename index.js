@@ -9,7 +9,7 @@ const Groq = require('groq-sdk');
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 const port = process.env.PORT || 8080;
-const dbUrl = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/test";
+const dbUrl = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/prompthub";
 
 const app = express();
 
