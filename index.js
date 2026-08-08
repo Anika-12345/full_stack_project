@@ -9,6 +9,8 @@ const Groq = require('groq-sdk');
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 const port = process.env.PORT || 8080;
+
+// Default fallback points strictly to prompthub
 const dbUrl = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/prompthub";
 
 const app = express();
@@ -16,9 +18,9 @@ const app = express();
 // --- Database Connection ---
 async function main() {
     await mongoose.connect(dbUrl);
-    console.log("Database connection successful");
+    console.log("Database connection successful ->", mongoose.connection.name);
 }
-main().catch((err) => console.log(err));
+main().catch((err) => console.log("DB Connection Error:", err));
 
 // --- Schemas & Models ---
 const userSchema = new mongoose.Schema({
@@ -50,30 +52,11 @@ app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 app.use(express.static(path.join(__dirname, "public")));
 
-// --- Universal MongoStore Configuration (Supports v3, v4, v5+) ---
-let sessionStore;
-
-if (connectMongo.create) {
-    // connect-mongo v4+ standard syntax
-    sessionStore = connectMongo.create({
-        mongoUrl: dbUrl,
-        collectionName: 'sessions'
-    });
-} else if (typeof connectMongo === 'function') {
-    // connect-mongo legacy v3 syntax
-    const MongoStore = connectMongo(session);
-    sessionStore = new MongoStore({
-        mongoUrl: dbUrl,
-        collectionName: 'sessions'
-    });
-} else {
-    // ESM / CJS module fallback
-    const MongoStore = connectMongo.default || connectMongo;
-    sessionStore = MongoStore.create({
-        mongoUrl: dbUrl,
-        collectionName: 'sessions'
-    });
-}
+// --- MongoStore Configuration (Reuses Mongoose Connection) ---
+const sessionStore = connectMongo.create({
+    clientPromise: mongoose.connection.asPromise().then(m => m.connection.getClient()),
+    collectionName: 'sessions'
+});
 
 app.use(session({
     secret: process.env.SESSION_SECRET || 'secretkey',
@@ -82,8 +65,7 @@ app.use(session({
     store: sessionStore,
     cookie: {
         secure: false,
-        httpOnly: true,
-        
+        httpOnly: true
     }
 }));
 
